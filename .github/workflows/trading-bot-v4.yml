@@ -53,7 +53,7 @@ jobs:
     - name: 📂 Cargar RL State
       id: load-rl
       continue-on-error: true
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: rl_state.json
         key: rl-state-${{ github.run_number }}
@@ -160,7 +160,7 @@ jobs:
     # Guardar RL state actualizado (para próximas ejecuciones)
     - name: 💾 Guardar RL State
       if: always()
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: rl_state.json
         key: rl-state-${{ github.run_number }}
@@ -168,7 +168,7 @@ jobs:
     # Subir logs como artifacts (para debugging)
     - name: 📤 Subir logs
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: trading-logs-${{ github.run_number }}
         path: |
