@@ -1287,14 +1287,14 @@ class TradingBotV4:
             
             print(f"\n🎯 Abriendo {positions_to_open} posición(es) con AI V4...")
             
+            remaining_margin = margin_for_new
             for sig in validated_signals[:positions_to_open]:
-                self.open_position(
-                    sig['pair'],
-                    sig['analysis'],
-                    sig['data'],
-                    sig['current_price'],
-                    margin_for_new
-                )
+                capital, leverage = self.calculate_position_size(...)
+                margin_used = capital  # Aproximado
+                
+                self.open_position(...)
+                
+                remaining_margin -= margin_used  # ✅ Restar para siguiente
             
             # Guardar estado RL si está activo
             if self.rl_sizer and not self.config.DRY_RUN:
