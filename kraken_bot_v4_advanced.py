@@ -112,15 +112,15 @@ class Config:
     WEIGHT_TREND_FOLLOWING = float(os.getenv('WEIGHT_TREND_FOLLOWING', '0.20'))
     
     # ══════════════════ Multi-Asset ══════════════════
-TRADING_PAIRS = [
-    TradingPair('BTC-USD', 'XBTUSD', 0.0001, 0.30),  # ✅ Cambiar XBTEUR → XBTUSD
-    TradingPair('ETH-USD', 'ETHUSD', 0.001, 0.25),   # ✅ Cambiar ETHEUR → ETHUSD
-    TradingPair('ADA-USD', 'ADAUSD', 10.0, 0.25),    # ✅ Cambiar ADAEUR → ADAUSD
-    TradingPair('SOL-USD', 'SOLUSD', 0.01, 0.20),    # ✅ Cambiar SOLEUR → SOLUSD
-]
+    TRADING_PAIRS = [
+        TradingPair('BTC-USD', 'XBTUSD', 0.0001, 0.30),
+        TradingPair('ETH-USD', 'ETHUSD', 0.001, 0.25),
+        TradingPair('ADA-USD', 'ADAUSD', 10.0, 0.25),
+        TradingPair('SOL-USD', 'SOLUSD', 0.01, 0.20),
+    ]
     
-    MAX_CORRELATION = float(os.getenv('MAX_CORRELATION', '0.7'))
-    MAX_POSITIONS = int(os.getenv('MAX_POSITIONS', '3'))
+    MAX_CORRELATION = float(os.getenv('MAX_CORRELATION', '0.7'))  # ← Debe tener 4 espacios
+    MAX_POSITIONS = int(os.getenv('MAX_POSITIONS', '3'))  # ← Debe tener 4 espacios
     
     # ══════════════════ Trading ══════════════════
     LEVERAGE = int(os.getenv('LEVERAGE', '3'))
