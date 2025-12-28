@@ -662,3 +662,311 @@ Para dudas técnicas o reportar bugs, abre un Issue en GitHub.
 **🚀 Happy AI Trading!**
 
 *V4.0 - Advanced AI System - Diciembre 2024*
+
+# 🔄 Cambios Clave en trading-bot-v4.yml
+
+## ✅ Archivo Actualizado
+
+Reemplaza tu `trading-bot-v4.yml` actual por la nueva versión.
+
+---
+
+## 📝 Cambios Principales
+
+### 1. **Nombre del archivo ejecutable corregido**
+
+```yaml
+# ANTES (en tu archivo original):
+python kraken_bot_v4_advanced.py
+
+# AHORA (actualizado):
+python kraken_bot_v4_advanced.py  # ✓ Nombre correcto
+```
+
+### 2. **Cache del RL State mejorado**
+
+```yaml
+# ANTES: Cache básico
+- uses: actions/cache@v3
+
+# AHORA: Cache con restore-keys mejorado
+- name: 📂 Cargar RL State
+  uses: actions/cache@v3
+  with:
+    path: rl_state.json
+    key: rl-state-${{ github.run_number }}
+    restore-keys: |
+      rl-state-    # ✓ Busca estados previos
+```
+
+**Beneficio:** El RL agent mantiene su aprendizaje entre ejecuciones.
+
+### 3. **Variables de entorno organizadas**
+
+```yaml
+# Ahora con secciones claras:
+# ═══ APIS ═══
+# ═══ SENTIMENT ANALYSIS (V4) ═══
+# ═══ ON-CHAIN ANALYSIS (V4) ═══
+# ═══ ENSEMBLE (V4) ═══
+# ═══ RL (V4) ═══
+# ═══ MULTI-ASSET (V3) ═══
+# ═══ RISK MANAGEMENT ═══
+# ═══ STRATEGY (V3) ═══
+# ═══ MODE ═══
+```
+
+**Beneficio:** Más fácil de entender y modificar.
+
+### 4. **Inputs manuales para testing**
+
+```yaml
+workflow_dispatch:
+  inputs:
+    dry_run: 'true'
+    use_sentiment: 'true'   # ✓ Activar/desactivar individualmente
+    use_onchain: 'true'
+    use_ensemble: 'true'
+    use_rl: 'true'
+```
+
+**Beneficio:** Puedes probar cada feature por separado.
+
+### 5. **Echo mejorado con info del bot**
+
+```yaml
+run: |
+  echo "🤖 AI Features V4:"
+  echo "   Sentiment Analysis: $USE_SENTIMENT_ANALYSIS"
+  echo "   On-Chain Metrics: $USE_ONCHAIN_ANALYSIS"
+  echo "   Ensemble System: $USE_ENSEMBLE_SYSTEM"
+  echo "   RL Position Sizing: $USE_RL_POSITION_SIZING"
+```
+
+**Beneficio:** Ves inmediatamente qué features están activas.
+
+---
+
+## 🎯 Configuraciones Recomendadas
+
+### Para Testing Inicial
+
+```yaml
+# En las variables de entorno, ajusta:
+DRY_RUN: 'true'              # ✓ SIMULACIÓN
+MAX_POSITIONS: '1'           # ✓ Solo 1 posición
+LEVERAGE: '2'                # ✓ Leverage bajo
+MIN_ENSEMBLE_CONSENSUS: '0.75'  # ✓ Muy conservador
+```
+
+### Para Producción Conservadora
+
+```yaml
+DRY_RUN: 'false'             # ⚠️ REAL
+MAX_POSITIONS: '2'
+LEVERAGE: '3'
+MIN_ENSEMBLE_CONSENSUS: '0.6'
+MIN_SENTIMENT_CONFIDENCE: '0.6'
+MIN_ONCHAIN_STRENGTH: '0.6'
+```
+
+### Para Producción Agresiva
+
+```yaml
+DRY_RUN: 'false'             # ⚠️ REAL
+MAX_POSITIONS: '3'
+LEVERAGE: '4'
+MIN_ENSEMBLE_CONSENSUS: '0.5'
+MIN_SENTIMENT_CONFIDENCE: '0.4'
+MIN_ONCHAIN_STRENGTH: '0.4'
+RL_EPSILON: '0.15'           # Más exploración
+```
+
+---
+
+## 🔍 Cómo Ejecutar Manualmente
+
+### 1. Ve a tu repositorio en GitHub
+
+### 2. Click en "Actions"
+
+### 3. Selecciona "Kraken Trading Bot V4 - Advanced AI"
+
+### 4. Click "Run workflow"
+
+### 5. Configura opciones:
+
+```
+dry_run: true               ← Empieza con simulación
+use_sentiment: true         ← Activa sentiment
+use_onchain: true          ← Activa on-chain
+use_ensemble: true         ← Activa ensemble
+use_rl: true               ← Activa RL
+```
+
+### 6. Click "Run workflow" (verde)
+
+### 7. Espera 2-3 minutos
+
+### 8. Revisa los logs:
+- Click en el workflow que acaba de ejecutarse
+- Click en "trade"
+- Verás todos los logs del bot
+
+---
+
+## 📊 Qué Esperar en los Logs
+
+### Inicio:
+```
+════════════════════════════════════════════════════════════════════
+🚀 KRAKEN TRADING BOT V4 - ADVANCED AI SYSTEM
+════════════════════════════════════════════════════════════════════
+📅 2024-12-28 15:30:00
+🎯 Mode: SIMULATION
+
+🤖 AI Features V4:
+   Sentiment Analysis: true
+   On-Chain Metrics: true
+   Ensemble System: true
+   RL Position Sizing: true
+════════════════════════════════════════════════════════════════════
+```
+
+### Durante ejecución:
+```
+🚀 INITIALIZING KRAKEN TRADING BOT V4
+   ✓ Sentiment Analyzer activado
+   ✓ On-Chain Analyzer activado
+   ✓ Ensemble System activado
+   ✓ RL Position Sizing activado
+
+💰 Balance: 1,250.50 EUR
+   Margen disponible: 1,100.00 EUR
+
+📊 Descargando datos multi-asset...
+   ✓ BTC-USD: 4320 velas
+   ✓ ETH-USD: 4320 velas
+   ...
+
+🔍 Buscando señales con análisis V4...
+
+   🎯 BTC-USD: Señal BUY detectada
+
+   📊 Layer 1: Sentiment Analysis
+   ✓ Sentiment confirma
+
+   🔗 Layer 2: On-Chain Metrics
+   ✓ On-Chain confirma
+
+   🎯 Layer 3: Ensemble Strategies
+   ✓ Ensemble confirma con 75% consenso
+
+   🤖 Layer 4: RL Position Sizing
+   RL: $400.00 @ 3x
+
+✅ DECISIÓN: BUY
+   Confianza final: 78%
+
+🟢 Abriendo BUY en BTC-USD
+   ...
+```
+
+---
+
+## ⚠️ Errores Comunes
+
+### Error: "CRYPTOCOMPARE_API_KEY not set"
+
+**Solución:**
+1. Ve a Settings → Secrets → Actions
+2. Agrega `CRYPTOCOMPARE_API_KEY`
+3. Valor: tu key de CryptoCompare
+
+### Error: "Module 'sentiment_analyzer' not found"
+
+**Solución:**
+```bash
+# Verifica que todos los archivos V4 estén en el repo:
+git add sentiment_analyzer.py
+git add onchain_metrics.py
+git add ensemble_strategies.py
+git add rl_position_sizing.py
+git commit -m "Add V4 modules"
+git push
+```
+
+### Error: "kraken_bot_v4_advanced.py: No such file"
+
+**Solución:**
+```bash
+# Asegúrate que el archivo principal está:
+git add kraken_bot_v4_advanced.py
+git commit -m "Add V4 main bot"
+git push
+```
+
+---
+
+## 🔄 Ejecución Automática
+
+El workflow se ejecuta **automáticamente cada 15 minutos**.
+
+Para cambiar la frecuencia:
+
+```yaml
+schedule:
+  - cron: '*/30 * * * *'  # Cada 30 minutos
+  # O
+  - cron: '0 * * * *'     # Cada hora
+  # O
+  - cron: '0 */2 * * *'   # Cada 2 horas
+```
+
+---
+
+## ✅ Checklist Final
+
+Antes de hacer push:
+
+- [ ] `trading-bot-v4.yml` actualizado en `.github/workflows/`
+- [ ] `kraken_bot_v4_advanced.py` en la raíz del repo
+- [ ] Todos los módulos V4 presentes:
+  - [ ] `sentiment_analyzer.py`
+  - [ ] `onchain_metrics.py`
+  - [ ] `ensemble_strategies.py`
+  - [ ] `rl_position_sizing.py`
+- [ ] `requirements.txt` actualizado
+- [ ] Secrets configurados en GitHub:
+  - [ ] `KRAKEN_API_KEY`
+  - [ ] `KRAKEN_API_SECRET`
+  - [ ] `CRYPTOCOMPARE_API_KEY`
+  - [ ] `TELEGRAM_BOT_TOKEN` (opcional)
+  - [ ] `TELEGRAM_CHAT_ID` (opcional)
+
+---
+
+## 🚀 Comando para subir todo
+
+```bash
+# 1. Agregar todos los archivos nuevos
+git add .github/workflows/trading-bot-v4.yml
+git add kraken_bot_v4_advanced.py
+git add sentiment_analyzer.py
+git add onchain_metrics.py
+git add ensemble_strategies.py
+git add rl_position_sizing.py
+git add requirements.txt
+
+# 2. Commit
+git commit -m "Add complete V4 system with AI features"
+
+# 3. Push
+git push
+
+# 4. Ve a GitHub Actions y ejecuta manualmente
+```
+
+---
+
+**🎉 ¡Workflow actualizado y listo para V4!**
