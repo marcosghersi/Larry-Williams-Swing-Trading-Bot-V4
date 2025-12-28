@@ -1,22 +1,24 @@
 """
-SENTIMENT ANALYZER - CryptoCompare API Integration
+SENTIMENT ANALYZER - CryptoCompare + NewsData.io Integration
 Analiza el sentiment de redes sociales y noticias para crypto
 """
 
 import os
 import requests
 import time
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 
 @dataclass
 class SentimentScore:
     overall_score: float  # -1 (muy negativo) a +1 (muy positivo)
     news_score: float
     social_score: float
+    newsdata_score: float  # NUEVO: Score de NewsData.io
     confidence: float
     timestamp: datetime
+    news_count: int = 0  # NUEVO: Cantidad de noticias analizadas
     
     def is_bullish(self, threshold: float = 0.2) -> bool:
         return self.overall_score > threshold
@@ -27,23 +29,51 @@ class SentimentScore:
 
 class SentimentAnalyzer:
     """
-    Integra datos de sentiment de CryptoCompare API
-    
-    Endpoints utilizados:
-    - /data/v2/news/ - Últimas noticias
-    - /data/social/coin/latest - Stats sociales
+    Integra datos de sentiment de múltiples fuentes:
+    - CryptoCompare API (noticias y social)
+    - NewsData.io API (noticias globales)
     """
     
-    def __init__(self, api_key: str):
-        self.api_key = api_key
+    def __init__(self, cryptocompare_api_key: str, newsdata_api_key: Optional[str] = None):
+        self.cryptocompare_key = cryptocompare_api_key
+        self.newsdata_key = newsdata_api_key
         self.base_url = "https://min-api.cryptocompare.com"
+        self.newsdata_url = "https://newsdata.io/api/1/news"
         self.session = requests.Session()
         self.cache = {}
         self.cache_duration = 300  # 5 minutos
+        
+        # Keywords para análisis de sentiment
+        self.positive_keywords = [
+            'bullish', 'surge', 'rally', 'gain', 'pump', 'moon', 'adoption',
+            'breakthrough', 'soar', 'skyrocket', 'boom', 'breakthrough',
+            'positive', 'upgrade', 'partnership', 'growth', 'innovation',
+            'institutional', 'buying', 'accumulation', 'breakout'
+        ]
+        
+        self.negative_keywords = [
+            'bearish', 'crash', 'dump', 'drop', 'fall', 'decline', 'regulation',
+            'ban', 'crackdown', 'plunge', 'collapse', 'fear', 'panic',
+            'lawsuit', 'hack', 'scam', 'fraud', 'bubble', 'selloff',
+            'correction', 'weakness', 'concern', 'risk'
+        ]
+        
+        # Crypto symbols mapping
+        self.crypto_names = {
+            'BTC': ['bitcoin', 'btc'],
+            'ETH': ['ethereum', 'eth', 'ether'],
+            'ADA': ['cardano', 'ada'],
+            'SOL': ['solana', 'sol'],
+            'XRP': ['ripple', 'xrp'],
+            'MATIC': ['polygon', 'matic'],
+            'AVAX': ['avalanche', 'avax'],
+            'LINK': ['chainlink', 'link'],
+            'DOT': ['polkadot', 'dot']
+        }
     
     def get_sentiment(self, symbol: str) -> Optional[SentimentScore]:
         """
-        Obtiene sentiment score para un símbolo.
+        Obtiene sentiment score agregado de todas las fuentes.
         
         Args:
             symbol: Símbolo crypto (BTC, ETH, etc.)
@@ -61,45 +91,56 @@ class SentimentAnalyzer:
             return self.cache[cache_key]
         
         try:
-            # 1. News sentiment
-            news_score = self._get_news_sentiment(clean_symbol)
-            
-            # 2. Social sentiment
-            social_score = self._get_social_sentiment(clean_symbol)
-            
-            # 3. Calculate overall score
-            if news_score is None and social_score is None:
-                return None
-            
-            # Weighted average (60% social, 40% news)
             scores = []
             weights = []
+            news_count = 0
             
+            # 1. CryptoCompare News sentiment
+            cc_news_score = self._get_cryptocompare_news_sentiment(clean_symbol)
+            if cc_news_score is not None:
+                scores.append(cc_news_score)
+                weights.append(0.25)  # 25% peso
+            
+            # 2. CryptoCompare Social sentiment
+            social_score = self._get_social_sentiment(clean_symbol)
             if social_score is not None:
                 scores.append(social_score)
-                weights.append(0.6)
+                weights.append(0.25)  # 25% peso
             
-            if news_score is not None:
-                scores.append(news_score)
-                weights.append(0.4)
+            # 3. NewsData.io sentiment (NUEVO)
+            newsdata_score = None
+            if self.newsdata_key:
+                newsdata_score, news_count = self._get_newsdata_sentiment(clean_symbol)
+                if newsdata_score is not None:
+                    scores.append(newsdata_score)
+                    weights.append(0.50)  # 50% peso (fuente más importante)
             
+            # Verificar que tengamos al menos una fuente
+            if not scores:
+                return None
+            
+            # Calculate weighted average
             overall = sum(s * w for s, w in zip(scores, weights)) / sum(weights)
             
-            # Confidence based on data availability
-            confidence = 1.0 if (social_score is not None and news_score is not None) else 0.5
+            # Confidence basada en disponibilidad de datos
+            confidence = len(scores) / 3.0  # 3 fuentes posibles
             
             sentiment = SentimentScore(
                 overall_score=overall,
-                news_score=news_score or 0.0,
+                news_score=cc_news_score or 0.0,
                 social_score=social_score or 0.0,
+                newsdata_score=newsdata_score or 0.0,
                 confidence=confidence,
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
+                news_count=news_count
             )
             
             # Cache result
             self.cache[cache_key] = sentiment
             
-            print(f"   💭 Sentiment {clean_symbol}: Overall={overall:.2f}, News={news_score}, Social={social_score}")
+            print(f"   💭 Sentiment {clean_symbol}: Overall={overall:.2f}")
+            print(f"      CC_News={cc_news_score}, Social={social_score}, NewsData={newsdata_score}")
+            print(f"      Confidence={confidence:.2f}, News analyzed={news_count}")
             
             return sentiment
             
@@ -107,9 +148,9 @@ class SentimentAnalyzer:
             print(f"   ⚠️ Error obteniendo sentiment para {clean_symbol}: {e}")
             return None
     
-    def _get_news_sentiment(self, symbol: str) -> Optional[float]:
+    def _get_cryptocompare_news_sentiment(self, symbol: str) -> Optional[float]:
         """
-        Analiza sentiment de noticias recientes.
+        Analiza sentiment de noticias de CryptoCompare.
         
         Returns:
             Score de -1 a +1, o None si error
@@ -122,7 +163,7 @@ class SentimentAnalyzer:
             }
             
             headers = {
-                'authorization': f'Apikey {self.api_key}'
+                'authorization': f'Apikey {self.cryptocompare_key}'
             }
             
             response = self.session.get(url, params=params, headers=headers, timeout=10)
@@ -138,10 +179,6 @@ class SentimentAnalyzer:
             if not news_items:
                 return None
             
-            # Analizar sentiment basado en categorías y keywords
-            positive_keywords = ['bullish', 'surge', 'rally', 'gain', 'pump', 'moon', 'adoption']
-            negative_keywords = ['bearish', 'crash', 'dump', 'drop', 'fall', 'decline', 'regulation']
-            
             sentiment_scores = []
             
             for item in news_items[:20]:  # Últimas 20 noticias
@@ -149,27 +186,112 @@ class SentimentAnalyzer:
                 body = item.get('body', '').lower()
                 text = title + ' ' + body
                 
-                pos_count = sum(1 for word in positive_keywords if word in text)
-                neg_count = sum(1 for word in negative_keywords if word in text)
-                
-                if pos_count + neg_count > 0:
-                    score = (pos_count - neg_count) / (pos_count + neg_count)
+                score = self._calculate_text_sentiment(text)
+                if score != 0.0:
                     sentiment_scores.append(score)
             
             if not sentiment_scores:
                 return 0.0
             
-            avg_sentiment = sum(sentiment_scores) / len(sentiment_scores)
-            
-            return avg_sentiment
+            return sum(sentiment_scores) / len(sentiment_scores)
             
         except Exception as e:
-            print(f"   ⚠️ Error en news sentiment: {e}")
+            print(f"   ⚠️ Error en CC news sentiment: {e}")
             return None
+    
+    def _get_newsdata_sentiment(self, symbol: str) -> tuple[Optional[float], int]:
+        """
+        Analiza sentiment de noticias desde NewsData.io.
+        
+        Returns:
+            (score, news_count) o (None, 0) si error
+        """
+        if not self.newsdata_key:
+            return None, 0
+        
+        try:
+            # Obtener nombres asociados al símbolo
+            search_terms = self.crypto_names.get(symbol, [symbol.lower()])
+            
+            # Construir query
+            query = ' OR '.join(search_terms)
+            
+            params = {
+                'apikey': self.newsdata_key,
+                'q': query,
+                'language': 'en',
+                'category': 'business,technology',
+                'size': 10  # Últimas 10 noticias
+            }
+            
+            response = self.session.get(self.newsdata_url, params=params, timeout=15)
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            if data.get('status') != 'success':
+                return None, 0
+            
+            news_items = data.get('results', [])
+            
+            if not news_items:
+                return 0.0, 0
+            
+            sentiment_scores = []
+            
+            for item in news_items:
+                # Combinar título y descripción
+                title = item.get('title', '').lower()
+                description = item.get('description', '').lower()
+                content = item.get('content', '').lower() if item.get('content') else ''
+                
+                text = f"{title} {description} {content}"
+                
+                # Verificar relevancia (menciona el crypto?)
+                is_relevant = any(term in text for term in search_terms)
+                
+                if is_relevant:
+                    score = self._calculate_text_sentiment(text)
+                    sentiment_scores.append(score)
+            
+            if not sentiment_scores:
+                return 0.0, 0
+            
+            avg_score = sum(sentiment_scores) / len(sentiment_scores)
+            
+            return avg_score, len(sentiment_scores)
+            
+        except Exception as e:
+            print(f"   ⚠️ Error en NewsData sentiment: {e}")
+            return None, 0
+    
+    def _calculate_text_sentiment(self, text: str) -> float:
+        """
+        Calcula sentiment de un texto usando keyword matching.
+        
+        Returns:
+            Score de -1 a +1
+        """
+        text_lower = text.lower()
+        
+        pos_count = sum(1 for word in self.positive_keywords if word in text_lower)
+        neg_count = sum(1 for word in self.negative_keywords if word in text_lower)
+        
+        if pos_count + neg_count == 0:
+            return 0.0
+        
+        # Score normalizado
+        score = (pos_count - neg_count) / (pos_count + neg_count)
+        
+        # Aplicar peso por cantidad de keywords (más keywords = más confianza)
+        total_keywords = pos_count + neg_count
+        confidence_multiplier = min(1.0, total_keywords / 5.0)  # Max 5 keywords
+        
+        return score * confidence_multiplier
     
     def _get_social_sentiment(self, symbol: str) -> Optional[float]:
         """
-        Obtiene métricas sociales (Twitter, Reddit, etc.).
+        Obtiene métricas sociales (Twitter, Reddit, etc.) de CryptoCompare.
         
         Returns:
             Score de -1 a +1, o None si error
@@ -181,7 +303,7 @@ class SentimentAnalyzer:
             }
             
             headers = {
-                'authorization': f'Apikey {self.api_key}'
+                'authorization': f'Apikey {self.cryptocompare_key}'
             }
             
             response = self.session.get(url, params=params, headers=headers, timeout=10)
@@ -200,17 +322,13 @@ class SentimentAnalyzer:
             twitter_points = social_data.get('Twitter', {}).get('Points', 0)
             reddit_points = social_data.get('Reddit', {}).get('Points', 0)
             
-            # Normalizar a score -1 to +1
-            # Más followers/subscribers/points = más positivo
-            # Esto es simplificado - idealmente compararíamos con histórico
-            
             if twitter_followers == 0 and reddit_subscribers == 0:
                 return None
             
-            # Score basado en engagement points (normalizado)
+            # Score basado en engagement points
             total_points = twitter_points + reddit_points
             
-            # Normalizar aproximadamente (ajustar según experiencia)
+            # Normalizar
             if total_points > 10000:
                 score = 0.5
             elif total_points > 5000:
@@ -232,12 +350,12 @@ class SentimentAnalyzer:
         """
         Mapea símbolos a CryptoCompare coin IDs.
         """
-        # Mapeo básico - expandir según necesidad
         coin_map = {
             'BTC': 1182,
             'ETH': 7605,
             'ADA': 5038,
             'SOL': 151340,
+            'XRP': 4614,
             'MATIC': 202330,
             'AVAX': 166503,
             'LINK': 3808,
