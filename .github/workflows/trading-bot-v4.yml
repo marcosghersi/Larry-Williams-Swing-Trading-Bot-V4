@@ -125,7 +125,7 @@ jobs:
         #            RISK MANAGEMENT
         # ═══════════════════════════════════════════════════════════
         LEVERAGE: '3'                     # Base leverage (RL puede ajustar)
-        MIN_BALANCE: '30.0'
+        MIN_BALANCE: '10.0'
         
         STOP_LOSS_PCT: '4.0'              # Base (regime puede ajustar)
         TAKE_PROFIT_PCT: '8.0'
