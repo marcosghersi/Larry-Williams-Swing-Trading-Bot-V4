@@ -21,9 +21,9 @@ from dataclasses import dataclass
 import json
 import traceback
 
-# ══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════
 #                    IMPORTAR MÓDULOS V4
-# ══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════
 
 try:
     from sentiment_analyzer import (
@@ -67,9 +67,9 @@ except ImportError:
     RL_AVAILABLE = False
 
 
-# ══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════
 #                          CONFIGURACIÓN V4
-# ══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════
 
 @dataclass
 class TradingPair:
@@ -79,7 +79,7 @@ class TradingPair:
     allocation: float
 
 class Config:
-    # ═══════════════════ APIs ═══════════════════
+    # ══════════════════ APIs ══════════════════
     KRAKEN_API_KEY = os.getenv('KRAKEN_API_KEY', '')
     KRAKEN_API_SECRET = os.getenv('KRAKEN_API_SECRET', '')
     KRAKEN_API_URL = 'https://api.kraken.com'
@@ -88,7 +88,7 @@ class Config:
     TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
     TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '')
     
-    # ═══════════════════ V4 Features ═══════════════════
+    # ══════════════════ V4 Features ══════════════════
     USE_SENTIMENT_ANALYSIS = os.getenv('USE_SENTIMENT_ANALYSIS', 'false').lower() == 'true'
     MIN_SENTIMENT_CONFIDENCE = float(os.getenv('MIN_SENTIMENT_CONFIDENCE', '0.5'))
     
@@ -111,7 +111,7 @@ class Config:
     WEIGHT_MEAN_REVERSION = float(os.getenv('WEIGHT_MEAN_REVERSION', '0.25'))
     WEIGHT_TREND_FOLLOWING = float(os.getenv('WEIGHT_TREND_FOLLOWING', '0.20'))
     
-    # ═══════════════════ Multi-Asset ═══════════════════
+    # ══════════════════ Multi-Asset ══════════════════
     TRADING_PAIRS = [
         TradingPair('BTC-USD', 'XBTEUR', 0.0001, 0.30),
         TradingPair('ETH-USD', 'ETHEUR', 0.001, 0.25),
@@ -120,20 +120,20 @@ class Config:
     ]
     
     MAX_CORRELATION = float(os.getenv('MAX_CORRELATION', '0.7'))
-    MAX_POSITIONS = int(os.getenv('MAX_POSITIONS', '4'))
+    MAX_POSITIONS = int(os.getenv('MAX_POSITIONS', '3'))
     
-    # ═══════════════════ Trading ═══════════════════
+    # ══════════════════ Trading ══════════════════
     LEVERAGE = int(os.getenv('LEVERAGE', '3'))
-    MIN_BALANCE = float(os.getenv('MIN_BALANCE', '1.0'))
+    MIN_BALANCE = float(os.getenv('MIN_BALANCE', '30.0'))
     MARGIN_SAFETY_FACTOR = 1.5
     
-    # ═══════════════════ Risk ═══════════════════
+    # ══════════════════ Risk ══════════════════
     BASE_STOP_LOSS = float(os.getenv('STOP_LOSS_PCT', '4.0'))
     BASE_TAKE_PROFIT = float(os.getenv('TAKE_PROFIT_PCT', '8.0'))
     BASE_TRAILING_STOP = float(os.getenv('TRAILING_STOP_PCT', '2.5'))
     MIN_PROFIT_FOR_TRAILING = float(os.getenv('MIN_PROFIT_FOR_TRAILING', '3.0'))
     
-    # ═══════════════════ Strategy ═══════════════════
+    # ══════════════════ Strategy ══════════════════
     LOOKBACK_PERIOD = os.getenv('LOOKBACK_PERIOD', '180d')
     CANDLE_INTERVAL = os.getenv('CANDLE_INTERVAL', '1h')
     USE_VOLUME_FILTER = os.getenv('USE_VOLUME_FILTER', 'true').lower() == 'true'
@@ -142,13 +142,13 @@ class Config:
     USE_ML_VALIDATION = os.getenv('USE_ML_VALIDATION', 'true').lower() == 'true'
     ML_CONFIDENCE_THRESHOLD = float(os.getenv('ML_CONFIDENCE_THRESHOLD', '0.6'))
     
-    # ═══════════════════ Mode ═══════════════════
+    # ══════════════════ Mode ══════════════════
     DRY_RUN = os.getenv('DRY_RUN', 'true').lower() == 'true'
 
 
-# ══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════
 #                    KRAKEN CLIENT (del V3)
-# ══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════
 
 class KrakenClient:
     def __init__(self, api_key: str, api_secret: str, api_url: str):
@@ -285,9 +285,9 @@ class KrakenClient:
             )
 
 
-# ══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════
 #                    COMPONENTES V3 (Regime, ML, Correlation, Swing)
-# ══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════
 
 class RegimeDetector:
     @staticmethod
@@ -665,9 +665,9 @@ class PositionManagerV3:
         self.telegram.send(msg)
 
 
-# ══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════
 #                    BOT V4 - ADVANCED AI SYSTEM
-# ══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════
 
 class TradingBotV4:
     def __init__(self, config: Config):
@@ -719,12 +719,31 @@ class TradingBotV4:
             )
             self.rl_calculator = PositionSizeCalculator(self.rl_sizer)
             print("   ✓ RL Position Sizing activado")
+            
+            # ✅ NUEVO: Crear archivo vacío si no existe
+            self._initialize_rl_state_file()
         else:
             self.rl_sizer = None
             self.rl_calculator = None
         
         # Historial de trades (para RL)
         self.trades_history = []
+    
+    def _initialize_rl_state_file(self):
+        """✅ NUEVO: Inicializa archivo RL state si no existe"""
+        try:
+            if not os.path.exists(self.config.RL_STATE_FILE):
+                with open(self.config.RL_STATE_FILE, 'w') as f:
+                    json.dump({
+                        'q_table': {}, 
+                        'metadata': {
+                            'created': datetime.now().isoformat(),
+                            'num_states': 0
+                        }
+                    }, f)
+                print(f"   📝 RL state file inicializado: {self.config.RL_STATE_FILE}")
+        except Exception as e:
+            print(f"   ⚠️ Error inicializando RL state: {e}")
     
     def get_market_data(self, symbol: str) -> pd.DataFrame:
         ticker = yf.Ticker(symbol)
@@ -743,9 +762,9 @@ class TradingBotV4:
                                    data: pd.DataFrame,
                                    swing_signal: Tuple) -> Dict:
         """
-        ═══════════════════════════════════════════════════════════
+        ═══════════════════════════════════════════════════════════════
         ANÁLISIS MULTI-LAYER V4
-        ═══════════════════════════════════════════════════════════
+        ═══════════════════════════════════════════════════════════════
         """
         symbol = pair.yf_symbol
         signal, signal_price, swing_confidence = swing_signal
@@ -898,9 +917,9 @@ class TradingBotV4:
                                analysis_result: Dict,
                                available_margin: float) -> Tuple[float, int]:
         """
-        ═══════════════════════════════════════════════════════════
+        ═══════════════════════════════════════════════════════════════
         LAYER 4: RL POSITION SIZING (o tradicional)
-        ═══════════════════════════════════════════════════════════
+        ═══════════════════════════════════════════════════════════════
         """
         
         if self.rl_calculator:
@@ -946,16 +965,12 @@ class TradingBotV4:
                      analysis_result: Dict,
                      data: pd.DataFrame,
                      current_price: float,
-                     available_margin: float):
+                     capital: float,
+                     leverage: int):
         """Abre posición con análisis V4 completo."""
         
         signal = analysis_result['final_signal']
         confidence = analysis_result['confidence']
-        
-        # Calcular tamaño con RL o tradicional
-        capital, leverage = self.calculate_position_size(
-            pair, data, analysis_result, available_margin
-        )
         
         # Calcular volumen
         volume = (capital * leverage) / current_price
@@ -1068,9 +1083,9 @@ class TradingBotV4:
     
     def run(self):
         """
-        ═══════════════════════════════════════════════════════════
+        ═══════════════════════════════════════════════════════════════
         LOOP PRINCIPAL V4
-        ═══════════════════════════════════════════════════════════
+        ═══════════════════════════════════════════════════════════════
         """
         print("\n" + "="*70)
         print("KRAKEN TRADING BOT V4 - ADVANCED AI SYSTEM")
@@ -1288,17 +1303,38 @@ class TradingBotV4:
             print(f"\n🎯 Abriendo {positions_to_open} posición(es) con AI V4...")
             
             remaining_margin = margin_for_new
-            for sig in validated_signals[:positions_to_open]:
-                capital, leverage = self.calculate_position_size(...)
-                margin_used = capital  # Aproximado
-                
-                self.open_position(...)
-                
-                remaining_margin -= margin_used  # ✅ Restar para siguiente
             
-            # Guardar estado RL si está activo
-            if self.rl_sizer and not self.config.DRY_RUN:
+            for sig in validated_signals[:positions_to_open]:
+                # Calcular tamaño ANTES de abrir
+                capital, leverage = self.calculate_position_size(
+                    sig['pair'],
+                    sig['data'],
+                    sig['analysis'],
+                    remaining_margin
+                )
+                
+                # Abrir con valores ya calculados
+                self.open_position(
+                    sig['pair'],
+                    sig['analysis'],
+                    sig['data'],
+                    sig['current_price'],
+                    capital,
+                    leverage
+                )
+                
+                # Restar margen usado para siguiente posición
+                margin_used = capital
+                remaining_margin = max(0, remaining_margin - margin_used)
+                
+                if remaining_margin < self.config.MIN_BALANCE * 0.5:
+                    print(f"   ⚠️ Margen restante insuficiente, deteniendo aperturas")
+                    break
+            
+            # ✅ CORREGIDO: Guardar siempre (no solo en modo REAL)
+            if self.rl_sizer:
                 self.rl_sizer.save_state()
+                print(f"\n💾 RL state guardado")
             
             print("\n✅ Ciclo completado")
             
@@ -1356,23 +1392,20 @@ class TradingBotV4:
             
             print(f"   🤖 RL: reward={reward:.3f} para PnL={pnl_pct:.2f}%")
             
-            # Aquí podrías actualizar Q-values si tienes el estado guardado
-            # Por ahora solo calculamos el reward para logging
-            
         except Exception as e:
             print(f"   ⚠️ Error actualizando RL: {e}")
 
 
-# ══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════
 #                              MAIN
-# ══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════
 
 def main():
     """Entry point del bot V4."""
     
-    print("\n" + "═"*70)
+    print("\n" + "╔"*70)
     print("🚀 INITIALIZING KRAKEN TRADING BOT V4")
-    print("═"*70)
+    print("╔"*70)
     
     config = Config()
     
@@ -1417,15 +1450,15 @@ def main():
             print(f"   - {mod}")
         print("\nEl bot funcionará sin estas features.")
     
-    print("\n" + "═"*70)
+    print("\n" + "╔"*70)
     
     # Inicializar y ejecutar bot
     bot = TradingBotV4(config)
     bot.run()
     
-    print("\n" + "═"*70)
+    print("\n" + "╔"*70)
     print("✅ BOT V4 EXECUTION COMPLETED")
-    print("═"*70)
+    print("╔"*70)
 
 
 if __name__ == "__main__":
