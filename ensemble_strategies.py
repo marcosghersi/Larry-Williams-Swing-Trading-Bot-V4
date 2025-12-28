@@ -52,7 +52,7 @@ class MomentumStrategy:
     """Estrategia basada en momentum."""
     
     @staticmethod
-    def get_signal(data: pd.DataFrame, lookback: int = 14) -> StrategySignal:
+    def get_signal(data: pd.DataFrame, lookback: int = 10) -> StrategySignal:
         """
         Detecta momentum fuerte usando RSI y rate of change.
         """
@@ -122,7 +122,7 @@ class MeanReversionStrategy:
     """Estrategia de reversión a la media."""
     
     @staticmethod
-    def get_signal(data: pd.DataFrame, bb_period: int = 20, 
+    def get_signal(data: pd.DataFrame, bb_period: int = 10, 
                   bb_std: float = 2.0) -> StrategySignal:
         """
         Detecta oportunidades de mean reversion usando Bollinger Bands.
@@ -188,7 +188,7 @@ class TrendFollowingStrategy:
     
     @staticmethod
     def get_signal(data: pd.DataFrame, fast_ma: int = 10, 
-                  slow_ma: int = 50) -> StrategySignal:
+                  slow_ma: int = 30) -> StrategySignal:
         """
         Sigue tendencias usando cruces de medias móviles.
         """
