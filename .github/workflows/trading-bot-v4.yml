@@ -97,7 +97,7 @@ jobs:
         #         MULTI-STRATEGY ENSEMBLE (V4)
         # ═══════════════════════════════════════════════════════════
         USE_ENSEMBLE_SYSTEM: ${{ github.event.inputs.use_ensemble || 'true' }}
-        MIN_ENSEMBLE_CONSENSUS: '0.6'     # 60% estrategias deben coincidir
+        MIN_ENSEMBLE_CONSENSUS: '0.5'     # 60% estrategias deben coincidir
         MIN_ENSEMBLE_CONFIDENCE: '0.5'    # Confianza mínima del ensemble
         
         # Pesos de estrategias (deben sumar ~1.0)
