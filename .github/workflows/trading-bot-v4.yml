@@ -112,7 +112,7 @@ jobs:
         USE_RL_POSITION_SIZING: ${{ github.event.inputs.use_rl || 'true' }}
         RL_LEARNING_RATE: '0.1'           # Alpha
         RL_DISCOUNT_FACTOR: '0.95'        # Gamma
-        RL_EPSILON: '0.2'                 # Exploración (10%)
+        RL_EPSILON: '0.3'                 # Exploración (10%)
         RL_STATE_FILE: 'rl_state.json'
         
         # ═══════════════════════════════════════════════════════════
