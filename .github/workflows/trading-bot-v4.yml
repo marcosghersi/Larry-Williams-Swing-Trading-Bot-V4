@@ -97,14 +97,14 @@ jobs:
         #         MULTI-STRATEGY ENSEMBLE (V4)
         # ═══════════════════════════════════════════════════════════
         USE_ENSEMBLE_SYSTEM: ${{ github.event.inputs.use_ensemble || 'true' }}
-        MIN_ENSEMBLE_CONSENSUS: '0.6'     # 60% estrategias deben coincidir
-        MIN_ENSEMBLE_CONFIDENCE: '0.6'    # Confianza mínima del ensemble
+        MIN_ENSEMBLE_CONSENSUS: '0.5'     # 60% estrategias deben coincidir
+        MIN_ENSEMBLE_CONFIDENCE: '0.5'    # Confianza mínima del ensemble
         
         # Pesos de estrategias (deben sumar ~1.0)
-        WEIGHT_SWING: '0.30'
+        WEIGHT_SWING: '0.25'
         WEIGHT_MOMENTUM: '0.25'
         WEIGHT_MEAN_REVERSION: '0.25'
-        WEIGHT_TREND_FOLLOWING: '0.20'
+        WEIGHT_TREND_FOLLOWING: '0.25'
         
         # ═══════════════════════════════════════════════════════════
         #       REINFORCEMENT LEARNING (V4)
@@ -112,7 +112,7 @@ jobs:
         USE_RL_POSITION_SIZING: ${{ github.event.inputs.use_rl || 'true' }}
         RL_LEARNING_RATE: '0.1'           # Alpha
         RL_DISCOUNT_FACTOR: '0.95'        # Gamma
-        RL_EPSILON: '0.1'                 # Exploración (10%)
+        RL_EPSILON: '0.2'                 # Exploración (10%)
         RL_STATE_FILE: 'rl_state.json'
         
         # ═══════════════════════════════════════════════════════════
